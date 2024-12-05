@@ -1,25 +1,17 @@
 package osotnikov.spring_webflux_webclient;
 
-import io.netty.channel.ChannelOption;
-import io.netty.handler.timeout.ReadTimeoutHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.TcpClient;
+import reactor.netty.resources.ConnectionProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,20 +21,15 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import reactor.netty.resources.ConnectionProvider;
+import org.springframework.stereotype.Service;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 @Slf4j
-//@Service
+@Service
 public class CollectorService {
-
-//    @Autowired
-//    private WebClient webClient;
 
     private List<String> getDownloadUrls() {
         return Arrays.asList(new String[]{"http://localhost:8080/file1", "http://localhost:8080/file2"});
@@ -141,15 +128,15 @@ public class CollectorService {
                     log.error("Error reading body.", t);
                     // close pipe to force InputStream to error,
                     // otherwise the returned InputStream will hang forever if an error occurs
-                    try(isPipe) {
-                        //no-op
+                    try {
+                        isPipe.close();
                     } catch (IOException ioe) {
                         log.error("Error closing streams", ioe);
                     }
                 })
                 .doFinally(s -> {
-                    try(osPipe) {
-                        //no-op
+                    try {
+                        osPipe.close();
                     } catch (IOException ioe) {
                         log.error("Error closing streams", ioe);
                     }
