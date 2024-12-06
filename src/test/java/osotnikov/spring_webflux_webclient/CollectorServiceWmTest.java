@@ -3,6 +3,7 @@ package osotnikov.spring_webflux_webclient;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import io.restassured.RestAssured;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,22 +27,25 @@ class CollectorServiceWmTest {
     private String wiremockUrl;
 
     private CollectorService collectorService = new CollectorService();
+    private WireMockServer wireMockServer;
 
     @BeforeEach
     void setUp() {
+        wireMockServer = new WireMockServer(options().port(8080)); //No-args constructor will start on port 8080, no HTTPS
+        wireMockServer.start();
+        wiremockUrl = wireMockServer.baseUrl();
+    }
 
+    @AfterEach
+    void tearDown() {
+        wireMockServer.stop();
     }
 
     @Test
     public void test() {
 
-        WireMockServer wireMockServer = new WireMockServer(options().port(8080)); //No-args constructor will start on port 8080, no HTTPS
-        wireMockServer.start();
-
         stubFor(get("/ping")
            .willReturn(aResponse().withStatus(200)));
-
-        wiremockUrl = wireMockServer.baseUrl();
 
         RestAssured
                 .when()
@@ -50,27 +54,16 @@ class CollectorServiceWmTest {
                 .statusCode(200);
 
         wireMockServer.stop();
-
-
-
-
-//        stubFor(get("/ping")
-//            .willReturn(aResponse().withStatus(200)));
-//
-//        RestAssured
-//            .when()
-//            .get(this.wiremockUrl + "/ping")
-//            .then()
-//            .statusCode(200);
     }
 
     @Test
     public void testDownload() throws IOException {
+
         for (int i = 1 ; i <= 5 ; i++) {
-//            stubFor(get(this.wiremockUrl + "/" + i + ".jpg")
-//                    .willReturn(aResponse().withStatus(200)
-//                            .withHeader("Content-Type", "application/binary")
-//                            .withBodyFile(i + ".jpg")));
+            stubFor(get(this.wiremockUrl + "/" + i + ".jpg")
+                    .willReturn(aResponse().withStatus(200)
+                            .withHeader("Content-Type", "application/binary")
+                            .withBodyFile(i + ".jpg")));
 
             InputStream is = RestAssured
                     .when()
