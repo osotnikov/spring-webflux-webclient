@@ -123,7 +123,7 @@ public class CollectorService {
         // check HTTP status code, can throw exception if needed
         // ....
 
-        Flux<DataBuffer> body = response.body(BodyExtractors.toDataBuffers())
+        Flux<DataBuffer> fluxDataBufferBody = response.body(BodyExtractors.toDataBuffers())
                 .doOnError(t -> {
                     log.error("Error reading body.", t);
                     // close pipe to force InputStream to error,
@@ -142,7 +142,7 @@ public class CollectorService {
                     }
                 });
 
-        DataBufferUtils.write(body, osPipe)
+        DataBufferUtils.write(fluxDataBufferBody, osPipe)
                 .subscribe(DataBufferUtils.releaseConsumer());
 
         return isPipe;
