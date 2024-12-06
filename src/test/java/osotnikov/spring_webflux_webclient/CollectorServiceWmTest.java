@@ -15,7 +15,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 
 @SpringBootTest
@@ -33,12 +35,23 @@ class CollectorServiceWmTest {
     @Test
     public void test() {
 
-        WireMockServer wireMockServer = new WireMockServer(options().port(8089)); //No-args constructor will start on port 8080, no HTTPS
+        WireMockServer wireMockServer = new WireMockServer(options().port(8080)); //No-args constructor will start on port 8080, no HTTPS
         wireMockServer.start();
 
-// Sometime later
+        stubFor(get("/ping")
+           .willReturn(aResponse().withStatus(200)));
+
+        wiremockUrl = wireMockServer.baseUrl();
+
+        RestAssured
+                .when()
+                .get(this.wiremockUrl + "/ping")
+                .then()
+                .statusCode(200);
 
         wireMockServer.stop();
+
+
 
 
 //        stubFor(get("/ping")

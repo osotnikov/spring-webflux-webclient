@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit;
 @org.springframework.context.annotation.Configuration
 public class Configuration {
 
-    @Value("${wiremock.server.baseUrl}")
+    //@Value("${wiremock.server.baseUrl}")
     private String wiremockUrl;
 
     //@Bean
