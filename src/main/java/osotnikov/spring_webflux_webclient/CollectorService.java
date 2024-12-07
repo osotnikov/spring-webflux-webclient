@@ -109,6 +109,9 @@ public class CollectorService {
                     .write(dataBufferFlux, path, CREATE_NEW)
                     .block(); // only block here if the rest of your code is synchronous
         });
+
+        // broadcast DataBuffer to multiple subscribers with ConnectableFlux then use zip to combine
+        // return values from
     }
 
     private InputStream readAsInputStream(String url) throws IOException {
@@ -143,6 +146,7 @@ public class CollectorService {
                 });
 
         DataBufferUtils.write(fluxDataBufferBody, osPipe)
+
                 .subscribe(DataBufferUtils.releaseConsumer());
 
         return isPipe;
